@@ -49,14 +49,14 @@ func Problem2() int {
 	sumOfWindowFrom := func(input []int, start int, window int) int {
 		maxIndex := len(input)
 		result := 0
-		for index := start; (index < start + window) && index < maxIndex; index++ {
+		for index := start; (index < start+window) && index < maxIndex; index++ {
 			result = result + input[index]
 		}
 		return result
 	}
 
 	var sums []int
-	for index := 0; index < len(input); index ++ {
+	for index := 0; index < len(input); index++ {
 		sums = append(sums, sumOfWindowFrom(input, index, 3))
 	}
 

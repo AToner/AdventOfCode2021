@@ -60,7 +60,7 @@ func parseInput(filename string) []int {
 func increaseCounter(input []int) int {
 	counter := 0
 	for index := 1; index < len(input); index++ {
-		if input[index - 1] < input[index] {
+		if input[index-1] < input[index] {
 			counter++
 		}
 	}

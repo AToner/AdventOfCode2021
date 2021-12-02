@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
+	fmt.Println(day1.Problem1())
 	fmt.Println(day1.Problem2())
 }

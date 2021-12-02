@@ -18,9 +18,13 @@ Instead, consider sums of a three-measurement sliding window. Again considering 
 260      G H
 263        H
 
-Start by comparing the first and second three-measurement windows. The measurements in the first window are marked A (199, 200, 208); their sum is 199 + 200 + 208 = 607. The second window is marked B (200, 208, 210); its sum is 618. The sum of measurements in the second window is larger than the sum of the first, so this first comparison increased.
+Start by comparing the first and second three-measurement windows. The measurements in the first window are marked
+A (199, 200, 208); their sum is 199 + 200 + 208 = 607. The second window is marked B (200, 208, 210); its sum is 618.
+The sum of measurements in the second window is larger than the sum of the first, so this first comparison increased.
 
-Your goal now is to count the number of times the sum of measurements in this sliding window increases from the previous sum. So, compare A with B, then compare B with C, then C with D, and so on. Stop when there aren't enough measurements left to create a new three-measurement sum.
+Your goal now is to count the number of times the sum of measurements in this sliding window increases from the
+previous sum. So, compare A with B, then compare B with C, then C with D, and so on. Stop when there aren't enough
+measurements left to create a new three-measurement sum.
 
 In the above example, the sum of each three-measurement window is as follows:
 
@@ -36,6 +40,8 @@ H: 792 (increased)
 In this example, there are 5 sums that are larger than the previous sum.
 
 Consider sums of a three-measurement sliding window. How many sums are larger than the previous sum?
+
+1429
 */
 func Problem2() int {
 	input := parseInput("./input/day1/day1.txt")

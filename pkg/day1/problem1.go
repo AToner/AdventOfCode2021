@@ -45,9 +45,11 @@ measurement before the first measurement.) In the example above, the changes are
 In this example, there are 7 measurements that are larger than the previous measurement.
 
 How many measurements are larger than the previous measurement?
+
+1400
 */
 func Problem1() int {
-	return increaseCounter(parseInput("./input/day1/day1_sample.txt"))
+	return increaseCounter(parseInput("./input/day1/day1.txt"))
 }
 
 func parseInput(filename string) []int {
@@ -56,13 +58,11 @@ func parseInput(filename string) []int {
 }
 
 func increaseCounter(input []int) int {
-	var previous, counter int = 0, 0
-	for index, current := range input {
-		if index > 0 && current > previous {
+	counter := 0
+	for index := 1; index < len(input); index++ {
+		if input[index - 1] < input[index] {
 			counter++
 		}
-
-		previous = current
 	}
 	return counter
 }

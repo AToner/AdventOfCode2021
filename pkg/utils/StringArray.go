@@ -7,12 +7,12 @@ import (
 )
 
 type StringArray struct {
-	data []string
+	Data []string
 }
 
 func (array *StringArray) ToInt() []int {
 	var result []int
-	for _, str := range array.data {
+	for _, str := range array.Data {
 		current, err := strconv.Atoi(str)
 		if err != nil {
 			fmt.Println(err)

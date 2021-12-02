@@ -24,5 +24,5 @@ func ReadLines(path string) StringArray {
 		fmt.Println(scanner.Err())
 		os.Exit(1)
 	}
-	return StringArray{data: lines}
+	return StringArray{Data: lines}
 }

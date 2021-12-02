@@ -9,6 +9,69 @@ import (
 )
 
 /*
+--- Day 2: Dive! ---
+
+Now, you need to figure out how to pilot this thing.
+
+It seems like the submarine can take a series of commands like forward 1, down 2, or up 3:
+
+    forward X increases the horizontal position by X units.
+    down X increases the depth by X units.
+    up X decreases the depth by X units.
+
+Note that since you're on a submarine, down and up affect your depth, and so they have the opposite result of what you might expect.
+
+The submarine seems to already have a planned course (your puzzle day2.txt). You should probably figure out where it's going. For example:
+
+forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2
+
+Your horizontal position and depth both start at 0. The steps above would then modify them as follows:
+
+    forward 5 adds 5 to your horizontal position, a total of 5.
+    down 5 adds 5 to your depth, resulting in a value of 5.
+    forward 8 adds 8 to your horizontal position, a total of 13.
+    up 3 decreases your depth by 3, resulting in a value of 2.
+    down 8 adds 8 to your depth, resulting in a value of 10.
+    forward 2 adds 2 to your horizontal position, a total of 15.
+
+After following these instructions, you would have a horizontal position of 15 and a depth of 10. (Multiplying these together produces 150.)
+
+Calculate the horizontal position and depth you would have after following the planned course. What do you get if you multiply your final horizontal position by your final depth?
+1250395
+*/
+
+func Part1(fileName string) int {
+	input := utils.ReadLines(fileName)
+	horizontal := 0
+	depth := 0
+	for _, line := range input.Data {
+		instructions := strings.Split(line, " ")
+		action := instructions[0]
+		distance, err := strconv.Atoi(instructions[1])
+		if err != nil {
+			fmt.Printf("DAMN: %s\n", instructions)
+			os.Exit(1)
+		}
+		switch action {
+		case "up":
+			depth -= distance
+		case "down":
+			depth += distance
+		case "forward":
+			horizontal += distance
+		default:
+			fmt.Printf("Unknown action: %s\n", instructions)
+		}
+	}
+	return horizontal * depth
+}
+
+/*
 --- Part Two ---
 
 Based on your calculations, the planned course doesn't seem to make any sense. You find the submarine manual and discover that the process is actually slightly more complicated.
@@ -36,10 +99,10 @@ After following these new instructions, you would have a horizontal position of 
 
 Using this new interpretation of the commands, calculate the horizontal position and depth you would have after following the planned course. What do you get if you multiply your final horizontal position by your final depth?
 1451210346
- */
+*/
 
-func Problem2() float64 {
-	input := utils.ReadLines("./input/day2/day2.txt")
+func Part2(fileName string) float64 {
+	input := utils.ReadLines(fileName)
 	horizontal := 0
 	depth := 0.0
 	aim := 0
@@ -60,9 +123,8 @@ func Problem2() float64 {
 			horizontal += distance
 			depth = depth + (float64(aim) * float64(distance))
 		default:
-			fmt.Print("Unknown action: %s\n", instructions)
+			fmt.Printf("Unknown action: %s\n", instructions)
 		}
 	}
 	return float64(horizontal) * depth
 }
-

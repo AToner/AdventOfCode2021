@@ -1,4 +1,4 @@
-package day2
+package day01
 
 import (
 	"reflect"
@@ -11,7 +11,8 @@ func TestPart1(t *testing.T) {
 		fileName string
 		want     int
 	}{
-		{name: "The Test", fileName: "../../input/day2/day2.txt", want: 1250395},
+		{name: "Sample", fileName: "../../input/day01/day01_sample.txt", want: 7},
+		{name: "Actual", fileName: "../../input/day01/day01.txt", want: 1400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -26,14 +27,15 @@ func TestPart2(t *testing.T) {
 	tests := []struct {
 		name     string
 		fileName string
-		want     float64
+		want     int
 	}{
-		{name: "The Test", fileName: "../../input/day2/day2.txt", want: 1451210346},
+		{name: "Sample", fileName: "../../input/day01/day01_sample.txt", want: 5},
+		{name: "Actual", fileName: "../../input/day01/day01.txt", want: 1429},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Part2(tt.fileName); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Part1() = %v, want %v", got, tt.want)
+				t.Errorf("Part2() = %v, want %v", got, tt.want)
 			}
 		})
 	}

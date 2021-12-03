@@ -1,4 +1,4 @@
-package day2
+package day02
 
 import (
 	"andytoner.com/aoc2021/pkg/utils"
@@ -21,7 +21,7 @@ It seems like the submarine can take a series of commands like forward 1, down 2
 
 Note that since you're on a submarine, down and up affect your depth, and so they have the opposite result of what you might expect.
 
-The submarine seems to already have a planned course (your puzzle day2.txt). You should probably figure out where it's going. For example:
+The submarine seems to already have a planned course (your puzzle day02.txt). You should probably figure out where it's going. For example:
 
 forward 5
 down 5

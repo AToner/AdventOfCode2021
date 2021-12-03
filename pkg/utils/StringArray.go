@@ -18,3 +18,17 @@ func ToInt(array []string) []int {
 	}
 	return result
 }
+
+func BinaryParse(array []string) []int {
+	bitSize := len(array[0]) + 1
+	var result []int
+	for _, str := range array {
+		current, err := strconv.ParseInt(str, 2, bitSize)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		result = append(result, int(current))
+	}
+	return result
+}

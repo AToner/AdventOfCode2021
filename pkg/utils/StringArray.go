@@ -6,13 +6,9 @@ import (
 	"strconv"
 )
 
-type StringArray struct {
-	Data []string
-}
-
-func (array *StringArray) ToInt() []int {
+func ToInt(array []string) []int {
 	var result []int
-	for _, str := range array.Data {
+	for _, str := range array {
 		current, err := strconv.Atoi(str)
 		if err != nil {
 			fmt.Println(err)

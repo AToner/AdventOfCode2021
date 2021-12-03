@@ -49,7 +49,7 @@ func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
 	horizontal := 0
 	depth := 0
-	for _, line := range input.Data {
+	for _, line := range input {
 		instructions := strings.Split(line, " ")
 		action := instructions[0]
 		distance, err := strconv.Atoi(instructions[1])
@@ -106,7 +106,7 @@ func Part2(fileName string) float64 {
 	horizontal := 0
 	depth := 0.0
 	aim := 0
-	for _, line := range input.Data {
+	for _, line := range input {
 		instructions := strings.Split(line, " ")
 		action := instructions[0]
 		distance, err := strconv.Atoi(instructions[1])

@@ -49,7 +49,7 @@ How many measurements are larger than the previous measurement?
 1400
 */
 func Part1(inputFilename string) int {
-	return increaseCounter(parseInput(inputFilename))
+	return increaseCounter(utils.ToInt(utils.ReadLines(inputFilename)))
 }
 
 /*
@@ -96,7 +96,7 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 1429
 */
 func Part2(inputFile string) int {
-	input := parseInput(inputFile)
+	input := utils.ToInt(utils.ReadLines(inputFile))
 	maxIndex := len(input)
 
 	sumOfWindowFrom := func(start int, windowSize int) int {
@@ -113,11 +113,6 @@ func Part2(inputFile string) int {
 	}
 
 	return increaseCounter(sums)
-}
-
-func parseInput(filename string) []int {
-	lines := utils.ReadLines(filename)
-	return lines.ToInt()
 }
 
 func increaseCounter(input []int) int {

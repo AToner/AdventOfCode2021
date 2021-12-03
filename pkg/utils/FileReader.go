@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func ReadLines(path string) StringArray {
+func ReadLines(path string) []string {
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Println(err)
@@ -24,5 +24,5 @@ func ReadLines(path string) StringArray {
 		fmt.Println(scanner.Err())
 		os.Exit(1)
 	}
-	return StringArray{Data: lines}
+	return lines
 }

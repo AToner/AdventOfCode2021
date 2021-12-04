@@ -114,6 +114,53 @@ func Part1(fileName string) int {
 	return 0
 }
 
+/*
+--- Part Two ---
+
+On the other hand, it might be wise to try a different strategy: let the giant squid win.
+
+You aren't sure how many bingo boards a giant squid could play at once, so rather than waste time counting its arms,
+the safe thing to do is to figure out which board will win last and choose that one. That way, no matter which boards
+it picks, it will win for sure.
+
+In the above example, the second board is the last to win, which happens after 13 is eventually called and its middle
+column is completely marked. If you were to keep playing until this point, the second board would have a sum of
+unmarked numbers equal to 148 for a final score of 148 * 13 = 1924.
+
+Figure out which board will win last. Once it wins, what would its final score be?
+*/
+func Part2(fileName string) int {
+	var boards []*Board
+	input := utils.ReadLines(fileName)
+
+	drawNumbers := createNumbers(input[0], ",")
+
+	for i := 2; i < len(input); i += 6 {
+		board := createBoard(input[i : i+5])
+		boards = append(boards, board)
+	}
+
+	for _, number := range drawNumbers {
+		markBoards(boards, number)
+		winners := checkForWin(boards)
+		for _, winner := range winners {
+			var newBoardList []*Board
+			for _, board := range boards {
+				if board != winner {
+					newBoardList = append(newBoardList, board)
+				}
+			}
+			boards = newBoardList
+		}
+
+		if len(boards) == 0 {
+			return sumBoard(winners[0], number)
+		}
+	}
+
+	return 0
+}
+
 func createNumbers(input string, separator string) []int {
 	var result []int
 	trimmedString := strings.Join(strings.Fields(input), " ")

@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	fmt.Printf("%d\n", day05.Part1("./input/day05/day05.txt"))
+	fmt.Printf("%d\n", day05.Part2("./input/day05/day05.txt"))
 }

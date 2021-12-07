@@ -77,7 +77,63 @@ func Part1(fileName string) int {
 
 	for _, line := range lines {
 		if !isDiagonal(line) {
-			xMin, xMax, yMin, yMax := lineDetail(line)
+			xMin, xMax, yMin, yMax, _, _ := lineDetail(line)
+			for x := xMin; x <= xMax; x++ {
+				for y := yMin; y <= yMax; y++ {
+					matrix[y][x]++
+				}
+			}
+		}
+	}
+	return countMatrix(matrix, 2)
+}
+
+/*
+--- Part Two ---
+Unfortunately, considering only horizontal and vertical lines doesn't give you the full picture; you need to also
+consider diagonal lines.
+
+Because of the limits of the hydrothermal vent mapping system, the lines in your list will only ever be horizontal,
+vertical, or a diagonal line at exactly 45 degrees. In other words:
+
+An entry like 1,1 -> 3,3 covers points 1,1, 2,2, and 3,3.
+An entry like 9,7 -> 7,9 covers points 9,7, 8,8, and 7,9.
+Considering all lines from the above example would now produce the following diagram:
+
+1.1....11.
+.111...2..
+..2.1.111.
+...1.2.2..
+.112313211
+...1.2....
+..1...1...
+.1.....1..
+1.......1.
+222111....
+You still need to determine the number of points where at least two lines overlap. In the above example, this is still
+anywhere in the diagram with a 2 or larger - now a total of 12 points.
+
+Consider all of the lines. At how many points do at least two lines overlap?
+19472
+
+*/
+func Part2(fileName string) int {
+	input := utils.ReadLines(fileName)
+	lines, maxSize := inputToLines(input)
+
+	matrix := makeMatrix(maxSize)
+
+	for _, line := range lines {
+		xMin, xMax, yMin, yMax, xDirection, yDirection := lineDetail(line)
+
+		if isDiagonal(line) {
+			y := line.start.y
+			for x := line.start.x; x != line.end.x; x = x + (1 * xDirection) {
+				matrix[y][x]++
+				y = y + (1 * yDirection)
+			}
+			matrix[y][line.end.x]++
+		} else {
 			for x := xMin; x <= xMax; x++ {
 				for y := yMin; y <= yMax; y++ {
 					matrix[y][x]++
@@ -126,12 +182,19 @@ func isDiagonal(input line) bool {
 	return !(input.start.x == input.end.x || input.start.y == input.end.y)
 }
 
-func lineDetail(input line) (int, int, int, int) {
+func lineDetail(input line) (int, int, int, int, int, int) {
 	xMin := int(math.Min(float64(input.start.x), float64(input.end.x)))
 	xMax := int(math.Max(float64(input.start.x), float64(input.end.x)))
 	yMin := int(math.Min(float64(input.start.y), float64(input.end.y)))
 	yMax := int(math.Max(float64(input.start.y), float64(input.end.y)))
-	return xMin, xMax, yMin, yMax
+	var xDirection, yDirection = 1, 1
+	if input.start.x > input.end.x {
+		xDirection = -1
+	}
+	if input.start.y > input.end.y {
+		yDirection = -1
+	}
+	return xMin, xMax, yMin, yMax, xDirection, yDirection
 }
 
 func countMatrix(input [][]int, limit int) int {

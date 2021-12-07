@@ -73,30 +73,11 @@ func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
 	lines, maxSize := inputToLines(input)
 
-	var matrix [][]int
-
-	matrix = make([][]int, maxSize+1)
-	for i := range matrix {
-		matrix[i] = make([]int, maxSize+1)
-	}
-
-	xDetail := func(input line) (int, int) {
-		xMin := int(math.Min(float64(input.start.x), float64(input.end.x)))
-		xMax := int(math.Max(float64(input.start.x), float64(input.end.x)))
-		return xMin, xMax
-	}
-
-	yDetail := func(input line) (int, int) {
-		yMin := int(math.Min(float64(input.start.y), float64(input.end.y)))
-		yMax := int(math.Max(float64(input.start.y), float64(input.end.y)))
-		return yMin, yMax
-	}
+	matrix := makeMatrix(maxSize)
 
 	for _, line := range lines {
 		if !isDiagonal(line) {
-			xMin, xMax := xDetail(line)
-			yMin, yMax := yDetail(line)
-
+			xMin, xMax, yMin, yMax := lineDetail(line)
 			for x := xMin; x <= xMax; x++ {
 				for y := yMin; y <= yMax; y++ {
 					matrix[y][x]++
@@ -145,6 +126,14 @@ func isDiagonal(input line) bool {
 	return !(input.start.x == input.end.x || input.start.y == input.end.y)
 }
 
+func lineDetail(input line) (int, int, int, int) {
+	xMin := int(math.Min(float64(input.start.x), float64(input.end.x)))
+	xMax := int(math.Max(float64(input.start.x), float64(input.end.x)))
+	yMin := int(math.Min(float64(input.start.y), float64(input.end.y)))
+	yMax := int(math.Max(float64(input.start.y), float64(input.end.y)))
+	return xMin, xMax, yMin, yMax
+}
+
 func countMatrix(input [][]int, limit int) int {
 	result := 0
 	for x := 0; x < len(input); x++ {
@@ -155,4 +144,12 @@ func countMatrix(input [][]int, limit int) int {
 		}
 	}
 	return result
+}
+
+func makeMatrix(maxSize int) [][]int {
+	matrix := make([][]int, maxSize+1)
+	for i := range matrix {
+		matrix[i] = make([]int, maxSize+1)
+	}
+	return matrix
 }

@@ -67,9 +67,8 @@ present at the start of the day.
 In this example, after 18 days, there are a total of 26 fish. After 80 days, there would be a total of 5934.
 
 Find a way to simulate lanternfish. How many lanternfish would there be after 80 days?
-
+359344
 */
-
 func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
 	fish := utils.ToInt(strings.Split(input[0], ","))
@@ -88,4 +87,51 @@ func Part1(fileName string) int {
 		fish = result
 	}
 	return len(fish)
+}
+
+/*
+--- Part Two ---
+Suppose the lanternfish live forever and have unlimited food and space. Would they take over the entire ocean?
+
+After 256 days in the example above, there would be a total of 26984457539 lanternfish!
+
+How many lanternfish would there be after 256 days?
+1629570219571.
+*/
+func Part2(fileName string) int {
+	input := utils.ReadLines(fileName)
+	fishList := utils.ToInt(strings.Split(input[0], ","))
+
+	fishMap := makeFishMap()
+
+	for _, fish := range fishList {
+		fishMap[fish] = fishMap[fish] + 1
+	}
+
+	for day := 1; day <= 256; day++ {
+		newFishMap := makeFishMap()
+		for key := range fishMap {
+			if key == 0 {
+				newFishMap[6] += fishMap[0]
+				newFishMap[8] = fishMap[0]
+			} else {
+				newFishMap[key-1] += fishMap[key]
+			}
+		}
+		fishMap = newFishMap
+	}
+
+	result := 0
+	for key := range fishMap {
+		result += fishMap[key]
+	}
+	return result
+}
+
+func makeFishMap() map[int]int {
+	newFishMap := make(map[int]int)
+	for key := 0; key < 9; key++ {
+		newFishMap[key] = 0
+	}
+	return newFishMap
 }

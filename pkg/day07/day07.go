@@ -51,6 +51,12 @@ spend to align to that position?
 */
 
 func Part1(fileName string) int {
+	return theWork(fuelToPositionPart1, fileName)
+}
+
+type fuelToPosition func([]int, int) int
+
+func theWork(fuelToPosition fuelToPosition, fileName string) int {
 	input := utils.ReadLines(fileName)
 	crabPositions := utils.ToInt(strings.Split(input[0], ","))
 	fuelCalcs := make(map[int]int)
@@ -82,7 +88,7 @@ func crabDetail(input []int) (int, int) {
 	return int(min), int(max)
 }
 
-func fuelToPosition(input []int, position int) int {
+func fuelToPositionPart1(input []int, position int) int {
 	fuel := 0.0
 	for _, entry := range input {
 		fuel += math.Abs(float64(entry - position))
@@ -119,27 +125,10 @@ escape route! How much fuel must they spend to align to that position?
 100347031
 */
 func Part2(fileName string) int {
-	input := utils.ReadLines(fileName)
-	crabPositions := utils.ToInt(strings.Split(input[0], ","))
-	fuelCalcs := make(map[int]int)
-
-	minPosition, maxPosition := crabDetail(crabPositions)
-	for crabPosition := minPosition; crabPosition <= maxPosition; crabPosition++ {
-		if fuelCalcs[crabPosition] == 0 {
-			fuelCalcs[crabPosition] = fuelToPosition2(crabPositions, crabPosition)
-		}
-	}
-
-	min := math.MaxInt
-	for _, fuelCalc := range fuelCalcs {
-		if fuelCalc < min {
-			min = fuelCalc
-		}
-	}
-	return min
+	return theWork(fuelToPositionPart2, fileName)
 }
 
-func fuelToPosition2(input []int, position int) int {
+func fuelToPositionPart2(input []int, position int) int {
 	fuel := 0.0
 	for _, entry := range input {
 		fuel += sumOfNumbers(math.Abs(float64(entry - position)))

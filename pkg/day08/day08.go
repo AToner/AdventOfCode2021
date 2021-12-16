@@ -1,11 +1,22 @@
 package day08
 
+import (
+	"andytoner.com/aoc2021/pkg/utils"
+	"fmt"
+	"os"
+	"sort"
+	"strconv"
+	"strings"
+)
+
 /*
 --- Day 8: Seven Segment Search ---
+You barely reach the safety of the cave when the whale smashes into the cave mouth, collapsing it. Sensors indicate
+another exit to this cave at a much greater depth, so you have no choice but to press on.
 
-You barely reach the safety of the cave when the whale smashes into the cave mouth, collapsing it. Sensors indicate another exit to this cave at a much greater depth, so you have no choice but to press on.
-
-As your submarine slowly makes its way through the cave system, you notice that the four-digit seven-segment displays in your submarine are malfunctioning; they must have been damaged during the escape. You'll be in a lot of trouble without them, so you'd better figure out what's wrong.
+As your submarine slowly makes its way through the cave system, you notice that the four-digit seven-segment displays
+in your submarine are malfunctioning; they must have been damaged during the escape. You'll be in a lot of trouble
+without them, so you'd better figure out what's wrong.
 
 Each digit of a seven-segment display is rendered by turning on or off any of seven segments named a through g:
 
@@ -85,9 +96,249 @@ gbdfcae bgc cg cgb
 gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc |
 fgae cfgab fg bagce
 
-Because the digits 1, 4, 7, and 8 each use a unique number of segments, you should be able to tell which combinations of signals correspond to those digits. Counting only digits in the output values (the part after | on each line), in the above example, there are 26 instances of digits that use a unique number of segments (highlighted above).
+Because the digits 1, 4, 7, and 8 each use a unique number of segments, you should be able to tell which combinations
+of signals correspond to those digits. Counting only digits in the output values (the part after | on each line), in
+the above example, there are 26 instances of digits that use a unique number of segments (highlighted above).
 
 In the output values, how many times do digits 1, 4, 7, or 8 appear?
+321
+*/
 
+func Part1(fileName string) int {
+	input := utils.ReadLines(fileName)
+
+	result := 0
+	for _, line := range input {
+		_, outputs := parseInputLine(line)
+		for _, output := range outputs {
+			segmentCount := len(output)
+			if segmentCount == 2 || segmentCount == 3 || segmentCount == 4 || segmentCount == 7 {
+				result++
+			}
+		}
+	}
+	return result
+}
+
+/*
+--- Part Two ---
+
+Through a little deduction, you should now be able to determine the remaining digits. Consider again the first example
+above:
+
+acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab |
+cdfeb fcadb cdfeb cdbaf
+
+After some careful analysis, the mapping between signal wires and segments only make sense in the following
+configuration:
+
+ dddd
+e    a
+e    a
+ ffff
+g    b
+g    b
+ cccc
+
+So, the unique signal patterns would correspond to the following digits:
+
+    acedgfb: 8
+    cdfbe: 5
+    gcdfa: 2
+    fbcad: 3
+    dab: 7
+    cefabd: 9
+    cdfgeb: 6
+    eafb: 4
+    cagedb: 0
+    ab: 1
+
+Then, the four digits of the output value can be decoded:
+
+    cdfeb: 5
+    fcadb: 3
+    cdfeb: 5
+    cdbaf: 3
+
+Therefore, the output value for this entry is 5353.
+
+Following this same process for each entry in the second, larger example above, the output value of each entry can be
+determined:
+
+    fdgacbe cefdb cefbgd gcbe: 8394
+    fcgedb cgb dgebacf gc: 9781
+    cg cg fdcagb cbg: 1197
+    efabcd cedba gadfec cb: 9361
+    gecf egdcabf bgf bfgea: 4873
+    gebdcfa ecba ca fadegcb: 8418
+    cefg dcbef fcge gbcadfe: 4548
+    ed bcgafe cdgba cbgef: 1625
+    gbdfcae bgc cg cgb: 8717
+    fgae cfgab fg bagce: 4315
+
+Adding all of the output values in this larger example produces 61229.
+
+For each entry, determine all of the wire/segment connections and decode the four-digit output values. What do you get
+if you add up all of the output values?
 
 */
+func Part2(fileName string) int {
+	var result int
+	input := utils.ReadLines(fileName)
+	for _, line := range input {
+		signals, outputs := parseInputLine(line)
+
+		numbers := calcFromSignals(signals)
+		var total []string
+		for _, output := range outputs {
+			total = append(total, strconv.Itoa(numbers[output]))
+		}
+		value, err := strconv.Atoi(strings.Join(total, ""))
+		if err != nil {
+			fmt.Println("BARF... Not a number")
+			os.Exit(1)
+		}
+		result += value
+	}
+	return result
+}
+
+func calcFromSignals(signals []string) map[string]int {
+	signalToNumber := make(map[string]int)
+	numberToSignal := make(map[int]string)
+
+	// Get the easy ones
+	for _, signal := range signals {
+		switch len(signal) {
+		case 2:
+			signalToNumber[signal] = 1
+			numberToSignal[1] = signal
+		case 3:
+			signalToNumber[signal] = 7
+			numberToSignal[7] = signal
+		case 4:
+			signalToNumber[signal] = 4
+			numberToSignal[4] = signal
+		case 7:
+			signalToNumber[signal] = 8
+			numberToSignal[8] = signal
+		}
+	}
+	// Find 9
+	for _, signal := range signals {
+		if len(signal) == 6 {
+			check := removeString(signal, numberToSignal[4])
+			if len(check) == 2 {
+				signalToNumber[signal] = 9
+				numberToSignal[9] = signal
+				break
+			}
+		}
+	}
+	// Find 2
+	usedLines := make(map[byte]int)
+	highestLineCount := 0
+	var mostUsedline byte
+	for _, signal := range signals {
+		for _, line := range []byte(signal) {
+			usedLines[line]++
+			if usedLines[line] > highestLineCount {
+				mostUsedline = line
+				highestLineCount = usedLines[line]
+			}
+		}
+	}
+
+	for _, signal := range signals {
+		if !strings.Contains(signal, string(mostUsedline)) {
+			signalToNumber[signal] = 2
+			numberToSignal[2] = signal
+			break
+		}
+	}
+
+	topSegment := removeString(numberToSignal[7], numberToSignal[1])
+	bottomSegment := removeString(numberToSignal[9], addStrings(numberToSignal[4], numberToSignal[7]))
+	bottomLeft := removeString(numberToSignal[8], numberToSignal[9])
+
+	// 3
+	numberToSignal[3] = sortString(removeString(addStrings(numberToSignal[2], numberToSignal[1]), bottomLeft))
+	signalToNumber[numberToSignal[3]] = 3
+
+	// middle segment
+	middleSegment := removeString(
+		removeString(removeString(numberToSignal[3], numberToSignal[1]), topSegment),
+		bottomSegment)
+
+	// 0
+	numberToSignal[0] = removeString(numberToSignal[8], middleSegment)
+	signalToNumber[numberToSignal[0]] = 0
+
+	for _, signal := range signals {
+		if _, ok := signalToNumber[signal]; !ok {
+			switch len(signal) {
+			case 5:
+				signalToNumber[signal] = 5
+				numberToSignal[5] = signal
+			case 6:
+				signalToNumber[signal] = 6
+				numberToSignal[6] = signal
+			}
+		}
+	}
+
+	return signalToNumber
+}
+
+func sortString(input string) string {
+	chars := strings.Split(input, "")
+	sort.Strings(chars)
+	input = strings.Join(chars, "")
+	return input
+}
+
+func addStrings(input1 string, input2 string) string {
+	return uniqueString(input1 + input2)
+}
+
+func removeString(input string, remove string) string {
+	result := input
+
+	for _, character := range strings.Split(remove, "") {
+		result = strings.ReplaceAll(result, character, "")
+	}
+	return result
+}
+
+func uniqueString(input string) string {
+	keys := make(map[string]bool)
+	chars := strings.Split(input, "")
+	var list []string
+
+	for _, entry := range chars {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+
+	return strings.Join(list, "")
+}
+
+func parseInputLine(input string) ([]string, []string) {
+	split := strings.Split(input, "|")
+	return sortStringsInList(split[0]), sortStringsInList(split[1])
+}
+
+func sortStringsInList(input string) []string {
+	allStrings := strings.Split(strings.TrimSpace(input), " ")
+
+	// Sort items in array
+	// in: [ 'ca', 'fgb' ]
+	// out: [ 'ac', 'bfg' ]
+	for i, _ := range allStrings {
+		allStrings[i] = sortString(allStrings[i])
+	}
+
+	return allStrings
+}

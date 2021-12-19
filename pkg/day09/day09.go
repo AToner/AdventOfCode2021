@@ -2,8 +2,8 @@ package day09
 
 import (
 	"andytoner.com/aoc2021/pkg/utils"
-	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -40,14 +40,13 @@ The risk level of a low point is 1 plus its height. In the above example, the ri
 and 6. The sum of the risk levels of all low points in the heightmap is therefore 15.
 
 Find all of the low points on your heightmap. What is the sum of the risk levels of all low points on your heightmap?
-15
+486
 */
 
 func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
-	grid, rowCount, columnCount := partInputLines(input)
+	grid, rowCount, columnCount := parseInputLines(input)
 
-	fmt.Println(grid, rowCount, columnCount)
 	var lowests []int
 	for row := 0; row < rowCount; row++ {
 		for column := 0; column < columnCount; column++ {
@@ -60,7 +59,6 @@ func Part1(fileName string) int {
 		}
 	}
 
-	fmt.Println(lowests)
 	result := 0
 	for _, lowest := range lowests {
 		result += lowest + 1
@@ -101,7 +99,89 @@ func minInArray(input []int) int {
 	return result
 }
 
-func partInputLines(lines []string) ([][]int, int, int) {
+/*
+--- Part Two ---
+Next, you need to find the largest basins so you know what areas are most important to avoid.
+
+A basin is all locations that eventually flow downward to a single low point. Therefore, every low point has a basin,
+although some basins are very small. Locations of height 9 do not count as being in any basin, and all other locations
+will always be part of exactly one basin.
+
+The size of a basin is the number of locations within the basin, including the low point. The example above has four
+basins.
+
+The top-left basin, size 3:
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+
+The top-right basin, size 9:
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+
+The middle basin, size 14:
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+
+The bottom-right basin, size 9:
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+
+Find the three largest basins and multiply their sizes together. In the above example, this is 9 * 14 * 9 = 1134.
+
+What do you get if you multiply together the sizes of the three largest basins?
+1059300
+*/
+
+func Part2(fileName string) int {
+	input := utils.ReadLines(fileName)
+	grid, rowCount, columnCount := parseInputLines(input)
+
+	var flood func(int, int) int
+	flood = func(row int, column int) int {
+		if row < 0 || row >= rowCount || column < 0 || column >= columnCount {
+			return 0
+		}
+
+		if grid[row][column] == 9 || grid[row][column] == -1 {
+			return 0
+		}
+
+		grid[row][column] = -1
+		result := 1
+		result += flood(row-1, column)
+		result += flood(row+1, column)
+		result += flood(row, column-1)
+		result += flood(row, column+1)
+
+		return result
+	}
+
+	var basinSizes []int
+	for row := 0; row < rowCount; row++ {
+		for column := 0; column < columnCount; column++ {
+			if basinCount := flood(row, column); basinCount > 0 {
+				basinSizes = append(basinSizes, basinCount)
+			}
+		}
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(basinSizes)))
+
+	return basinSizes[0] * basinSizes[1] * basinSizes[2]
+}
+
+func parseInputLines(lines []string) ([][]int, int, int) {
 	rowCount := len(lines)
 	columnCount := len(lines[0])
 

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"andytoner.com/aoc2021/pkg/day09"
+	"andytoner.com/aoc2021/pkg/day10"
 	"fmt"
 )
 
 func main() {
-	fmt.Printf("%d\n", day09.Part2("./input/day09/day09.txt"))
+	fmt.Printf("%d\n", day10.Part2("./input/day10/day10_sample.txt"))
 }

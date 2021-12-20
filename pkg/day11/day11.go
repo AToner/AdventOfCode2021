@@ -311,7 +311,7 @@ After 100 steps, there have been a total of 1656 flashes.
 
 Given the starting energy levels of the dumbo octopuses in your cavern, simulate 100 steps. How many total flashes are
 there after 100 steps?
-
+1694
 */
 
 type Octopus struct {
@@ -321,48 +321,117 @@ type Octopus struct {
 
 func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
-	grid, rowCount, columnCount := parseInputLines(input)
+	grid := parseInputLines(input)
 
-	var flash func(int, int, bool) int
-	flash = func(row int, column int, increment bool) int {
-		if row < 0 || row >= rowCount || column < 0 || column >= columnCount {
-			return 0
-		}
-
-		if increment {
-			grid[row][column].energy += 1
-		}
-
-		if grid[row][column].energy <= 9 || grid[row][column].flashed {
-			return 0
-		}
-
-		grid[row][column].flashed = true
-		result := 1
-		result += flash(row-1, column-1, true)
-		result += flash(row-1, column, true)
-		result += flash(row-1, column+1, true)
-		result += flash(row, column-1, true)
-		result += flash(row, column+1, true)
-		result += flash(row+1, column-1, true)
-		result += flash(row+1, column, true)
-		result += flash(row+1, column+1, true)
-
-		return result
-	}
 	flashCount := 0
 
 	for step := 1; step <= 100; step++ {
 		upEnergy(grid)
 		for rowIndex, _ := range grid {
 			for columnIndex, _ := range grid[rowIndex] {
-				flashCount += flash(rowIndex, columnIndex, false)
+				flashCount += flash(grid, rowIndex, columnIndex, false)
 			}
 		}
 		cleanGrid(grid)
 	}
 	displayGrid(grid)
 	return flashCount
+}
+
+/*
+--- Part Two ---
+It seems like the individual flashes aren't bright enough to navigate. However, you might have a better option: the
+flashes seem to be synchronizing!
+
+In the example above, the first time all octopuses flash simultaneously is step 195:
+
+After step 193:
+5877777777
+8877777777
+7777777777
+7777777777
+7777777777
+7777777777
+7777777777
+7777777777
+7777777777
+7777777777
+
+After step 194:
+6988888888
+9988888888
+8888888888
+8888888888
+8888888888
+8888888888
+8888888888
+8888888888
+8888888888
+8888888888
+
+After step 195:
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+If you can calculate the exact moments when the octopuses will all flash simultaneously, you should be able to navigate
+through the cavern. What is the first step during which all octopuses flash?
+346
+*/
+func Part2(fileName string) int {
+	input := utils.ReadLines(fileName)
+	grid := parseInputLines(input)
+	octopusCount := len(grid) * len(grid[0])
+
+	for step := 1; true; step++ {
+		upEnergy(grid)
+		for rowIndex, _ := range grid {
+			for columnIndex, _ := range grid[rowIndex] {
+				if flash(grid, rowIndex, columnIndex, false) == octopusCount {
+					fmt.Println("OMG")
+					return step
+				}
+			}
+		}
+		cleanGrid(grid)
+	}
+	return 0
+}
+
+func flash(grid [][]Octopus, row int, column int, increment bool) int {
+	rowCount := len(grid)
+	columnCount := len(grid[0])
+
+	if row < 0 || row >= rowCount || column < 0 || column >= columnCount {
+		return 0
+	}
+
+	if increment {
+		grid[row][column].energy += 1
+	}
+
+	if grid[row][column].energy <= 9 || grid[row][column].flashed {
+		return 0
+	}
+
+	grid[row][column].flashed = true
+	result := 1
+	result += flash(grid, row-1, column-1, true)
+	result += flash(grid, row-1, column, true)
+	result += flash(grid, row-1, column+1, true)
+	result += flash(grid, row, column-1, true)
+	result += flash(grid, row, column+1, true)
+	result += flash(grid, row+1, column-1, true)
+	result += flash(grid, row+1, column, true)
+	result += flash(grid, row+1, column+1, true)
+
+	return result
 }
 
 func upEnergy(grid [][]Octopus) {
@@ -384,7 +453,7 @@ func cleanGrid(grid [][]Octopus) {
 	}
 }
 
-func parseInputLines(lines []string) ([][]Octopus, int, int) {
+func parseInputLines(lines []string) [][]Octopus {
 	rowCount := len(lines)
 	columnCount := len(lines[0])
 
@@ -403,7 +472,7 @@ func parseInputLines(lines []string) ([][]Octopus, int, int) {
 			}
 		}
 	}
-	return result, rowCount, columnCount
+	return result
 }
 
 func displayGrid(grid [][]Octopus) {

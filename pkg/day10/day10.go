@@ -2,6 +2,7 @@ package day10
 
 import (
 	"andytoner.com/aoc2021/pkg/utils"
+	"sort"
 	"strings"
 )
 
@@ -81,16 +82,15 @@ var closeMap = map[string]string{
 	"<": ">",
 }
 
-var bracketScore = map[string]int{
-	")": 3,
-	"]": 57,
-	"}": 1197,
-	">": 25137,
-}
-
 func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
 
+	var bracketScore = map[string]int{
+		")": 3,
+		"]": 57,
+		"}": 1197,
+		">": 25137,
+	}
 	score := 0
 	for _, line := range input {
 		var stack []string
@@ -157,15 +157,22 @@ are the same number of scores smaller and larger than it.
 
 Find the completion string for each incomplete line, score the completion strings, and sort the scores. What is the
 middle score?
-
-
+1152088313
 */
 
 func Part2(fileName string) int {
 	input := utils.ReadLines(fileName)
 
-	score := 0
+	var scores []int
+	var bracketScore = map[string]int{
+		"(": 1,
+		"[": 2,
+		"{": 3,
+		"<": 4,
+	}
+
 	for _, line := range input {
+		errorFound := false
 		var stack []string
 		for _, char := range strings.Split(line, "") {
 			if strings.Contains(OPEN, char) {
@@ -174,11 +181,22 @@ func Part2(fileName string) int {
 				stackLength := len(stack) - 1
 				topOfStack := stack[stackLength]
 				if closeMap[topOfStack] != char {
+					errorFound = true
 					break
 				}
 				stack = stack[:stackLength]
 			}
 		}
+
+		if !errorFound {
+			score := 0
+			for stackIndex := len(stack) - 1; stackIndex >= 0; stackIndex-- {
+				score = score * 5
+				score += bracketScore[stack[stackIndex]]
+			}
+			scores = append(scores, score)
+		}
 	}
-	return score
+	sort.Ints(scores)
+	return scores[len(scores)/2]
 }

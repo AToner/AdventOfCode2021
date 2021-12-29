@@ -113,12 +113,6 @@ start-RW
 How many paths through this cave system are there that visit small caves at most once?
 5252
 */
-
-type Node struct {
-	name        string
-	connections []string
-}
-
 func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
 	nodes := *parseInputLines(input)
@@ -153,6 +147,138 @@ func Part1(fileName string) int {
 	return len(routes)
 }
 
+/*
+--- Part Two ---
+After reviewing the available paths, you realize you might have time to visit a single small cave twice. Specifically,
+big caves can be visited any number of times, a single small cave can be visited at most twice, and the remaining small
+caves can be visited at most once. However, the caves named start and end can only be visited exactly once each: once
+you leave the start cave, you may not return to it, and once you reach the end cave, the path must end immediately.
+
+Now, the 36 possible paths through the first example above are:
+
+start,A,b,A,b,A,c,A,end
+start,A,b,A,b,A,end
+start,A,b,A,b,end
+start,A,b,A,c,A,b,A,end
+start,A,b,A,c,A,b,end
+start,A,b,A,c,A,c,A,end
+start,A,b,A,c,A,end
+start,A,b,A,end
+start,A,b,d,b,A,c,A,end
+start,A,b,d,b,A,end
+start,A,b,d,b,end
+start,A,b,end
+start,A,c,A,b,A,b,A,end
+start,A,c,A,b,A,b,end
+start,A,c,A,b,A,c,A,end
+start,A,c,A,b,A,end
+start,A,c,A,b,d,b,A,end
+start,A,c,A,b,d,b,end
+start,A,c,A,b,end
+start,A,c,A,c,A,b,A,end
+start,A,c,A,c,A,b,end
+start,A,c,A,c,A,end
+start,A,c,A,end
+start,A,end
+start,b,A,b,A,c,A,end
+start,b,A,b,A,end
+start,b,A,b,end
+start,b,A,c,A,b,A,end
+start,b,A,c,A,b,end
+start,b,A,c,A,c,A,end
+start,b,A,c,A,end
+start,b,A,end
+start,b,d,b,A,c,A,end
+start,b,d,b,A,end
+start,b,d,b,end
+start,b,end
+The slightly larger example above now has 103 paths through it, and the even larger example now has 3509 paths through
+it.
+
+Given these new rules, how many paths through this cave system are there?
+147784
+*/
+func Part2(fileName string) int {
+	input := utils.ReadLines(fileName)
+	nodes := *parseInputLines(input)
+	var routes []Route
+
+	var walkNode func(Node, Route)
+	walkNode = func(node Node, route Route) {
+		if node.name == "end" {
+			if route.validRoute() {
+				routes = append(routes, route)
+			}
+			return
+		}
+
+		if node.name == "start" && route.caveVisitCount["start"] >= 1 {
+			return
+		}
+
+		if node.isSmall() && route.caveVisitCount[node.name] >= 2 {
+			return
+		}
+		route.caveVisitCount[node.name] += 1
+
+		for _, connectingNode := range node.connections {
+			duplicateRoute := Route{
+				caveVisitCount: duplicateNodeMap(route.caveVisitCount),
+			}
+			walkNode(nodes[connectingNode], duplicateRoute)
+		}
+		return
+	}
+
+	walkNode(nodes["start"], Route{
+		caveVisitCount: make(map[string]int),
+	})
+
+	return len(routes)
+}
+
+type Node struct {
+	name        string
+	connections []string
+}
+
+type Route struct {
+	caveVisitCount map[string]int
+}
+
+func (r *Route) validRoute() bool {
+	var totalSmallCaveVisits int
+	delete(r.caveVisitCount, "start")
+	for name, visitCount := range r.caveVisitCount {
+		if unicode.IsLower(rune(name[0])) {
+			totalSmallCaveVisits += visitCount
+		} else {
+			delete(r.caveVisitCount, name)
+		}
+	}
+	return totalSmallCaveVisits < len(r.caveVisitCount)+2
+}
+
+func (n *Node) isSmall() bool {
+	return unicode.IsLower(rune(n.name[0]))
+}
+
+func duplicateMap(input map[string]bool) map[string]bool {
+	result := make(map[string]bool)
+	for key, value := range input {
+		result[key] = value
+	}
+	return result
+}
+
+func duplicateNodeMap(input map[string]int) map[string]int {
+	result := make(map[string]int)
+	for key, value := range input {
+		result[key] = value
+	}
+	return result
+}
+
 func parseInputLines(input []string) *map[string]Node {
 	result := make(map[string]Node)
 
@@ -178,12 +304,4 @@ func parseInputLines(input []string) *map[string]Node {
 		createNode(nodes[1], nodes[0])
 	}
 	return &result
-}
-
-func duplicateMap(input map[string]bool) map[string]bool {
-	result := make(map[string]bool)
-	for key, value := range input {
-		result[key] = value
-	}
-	return result
 }

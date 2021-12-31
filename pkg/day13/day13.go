@@ -138,6 +138,25 @@ func Part1(fileName string) int {
 	return countDots(grid)
 }
 
+/*
+--- Part Two ---
+Finish folding the transparent paper according to the instructions. The manual says the code is always eight capital
+letters.
+
+What code do you use to activate the infrared thermal imaging camera system?
+HZLEHJRK
+*/
+func Part2(fileName string) int {
+	input := utils.ReadLines(fileName)
+	grid, foldSteps := parseInputLines(input)
+
+	for _, foldStep := range foldSteps {
+		grid = doFold(grid, foldStep)
+	}
+	displayGrid(grid)
+	return countDots(grid)
+}
+
 func doFold(grid [][]bool, step string) [][]bool {
 	stepInt, err := strconv.Atoi(step[2:])
 	if err != nil {

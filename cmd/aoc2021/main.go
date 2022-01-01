@@ -9,6 +9,6 @@ import (
 func main() {
 	start := time.Now()
 	fmt.Println(start)
-	fmt.Printf("%d\n", day14.Part1("./input/day14/day14.txt"))
+	fmt.Printf("%d\n", day14.Part2("./input/day14/day14_sample.txt"))
 	fmt.Println(time.Now().Sub(start))
 }

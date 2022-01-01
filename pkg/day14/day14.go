@@ -2,9 +2,9 @@ package day14
 
 import (
 	"andytoner.com/aoc2021/pkg/utils"
-	"fmt"
 	"math"
 	"strings"
+	"sync"
 )
 
 /*
@@ -56,7 +56,7 @@ Here are the results of a few steps using the above rules:
 
 Template:     NNCB
 After step 1: NCNBCHB
-After step 2: NBCCNBBBCBHCB
+After step 2: NBCCNBBBCBHC
 After step 3: NBBBCNCCNBBNBNBBCHBHHBCHB
 After step 4: NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB
 
@@ -74,50 +74,108 @@ func Part1(fileName string) int {
 	input := utils.ReadLines(fileName)
 	template, insertions := parseInputLines(input)
 
-	count := make(map[string]int)
+	return runSteps(template, insertions, 10)
+}
 
-	addToCount := func(char string) {
-		if _, ok := count[char]; ok {
-			count[char] += 1
-		} else {
-			count[char] = 1
-		}
-	}
-
-	getCounts := func() (int, int) {
-		highCount := 0
-		lowCount := math.MaxInt
-
-		for _, value := range count {
-			if value < lowCount {
-				lowCount = value
-			}
-
-			if value > highCount {
-				highCount = value
-			}
-		}
-		return highCount, lowCount
-	}
+func runSteps(template string, insertions map[string]string, steps int) int {
+	wg := &sync.WaitGroup{}
+	finalCount := make(map[string]int)
 
 	for _, char := range strings.Split(template, "") {
-		addToCount(char)
+		addToCount(finalCount, char)
 	}
 
-	for step := 1; step <= 10; step++ {
-		result := ""
-
-		for i := 0; i < len(template)-1; i++ {
-			pair := template[i : i+2]
-			addToCount(insertions[pair])
-			result = fmt.Sprintf("%s%c%s", result, pair[0], insertions[pair])
-		}
-		result = fmt.Sprintf("%s%c", result, template[len(template)-1])
-
-		template = result
+	countChannel := make(chan map[string]int)
+	for i := 0; i < len(template)-1; i++ {
+		wg.Add(1)
+		go firstPair(wg, template[i:i+2], insertions, steps-1, countChannel)
 	}
-	high, low := getCounts()
+
+	go func() {
+		wg.Wait()
+		close(countChannel)
+	}()
+
+	for count := range countChannel {
+		finalCount = mergeCounts(finalCount, count)
+	}
+
+	high, low := getCounts(finalCount)
 	return high - low
+}
+
+func firstPair(wg *sync.WaitGroup, template string, insertions map[string]string, step int, counts chan map[string]int) {
+	defer wg.Done()
+	count := make(map[string]int)
+	addPair(template, insertions, step, count)
+	counts <- count
+}
+
+func addPair(template string, insertions map[string]string, step int, count map[string]int) {
+	additionalChar := insertions[template]
+	addToCount(count, additionalChar)
+
+	if step == 0 {
+		return
+	}
+
+	pair1 := template[:1] + additionalChar
+	pair2 := additionalChar + template[1:]
+	addPair(pair1, insertions, step-1, count)
+	addPair(pair2, insertions, step-1, count)
+}
+
+func getCounts(count map[string]int) (int, int) {
+	highCount := 0
+	lowCount := math.MaxInt
+
+	for _, value := range count {
+		if value < lowCount {
+			lowCount = value
+		}
+
+		if value > highCount {
+			highCount = value
+		}
+	}
+	return highCount, lowCount
+}
+
+func addToCount(count map[string]int, char string) {
+	if _, ok := count[char]; ok {
+		count[char] += 1
+	} else {
+		count[char] = 1
+	}
+}
+
+func mergeCounts(count1 map[string]int, count2 map[string]int) map[string]int {
+	result := make(map[string]int)
+	for key, value := range count1 {
+		result[key] = value
+	}
+	for key, value := range count2 {
+		result[key] = value + count1[key]
+	}
+	return result
+}
+
+/*
+--- Part Two ---
+The resulting polymer isn't nearly strong enough to reinforce the submarine. You'll need to run more steps of the pair
+insertion process; a total of 40 steps should do it.
+
+In the above example, the most common element is B (occurring 2192039569602 times) and the least common element is H
+(occurring 3849876073 times); subtracting these produces 2188189693529.
+
+Apply 40 steps of pair insertion to the polymer template and find the most and least common elements in the result.
+What do you get if you take the quantity of the most common element and subtract the quantity of the least common
+element?
+*/
+func Part2(fileName string) int {
+	input := utils.ReadLines(fileName)
+	template, insertions := parseInputLines(input)
+	return runSteps(template, insertions, 40)
 }
 
 func parseInputLines(inputLines []string) (string, map[string]string) {

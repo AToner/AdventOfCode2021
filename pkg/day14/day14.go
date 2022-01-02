@@ -70,33 +70,33 @@ element?
 2010
 */
 
-func Part1(fileName string) int {
+func Part1(fileName string) uint64 {
 	input := utils.ReadLines(fileName)
 	template, insertions := parseInputLines(input)
 
 	return runSteps(template, insertions, 10)
 }
 
-func runSteps(template string, insertions map[string]string, steps int) int {
+func runSteps(template string, insertions map[string]string, steps int) uint64 {
 	wg := &sync.WaitGroup{}
-	finalCount := make(map[string]int)
+	finalCount := make(map[string]uint64)
 
 	for _, char := range strings.Split(template, "") {
 		addToCount(finalCount, char)
 	}
 
-	countChannel := make(chan map[string]int)
+	incomingCountChannel := make(chan map[string]uint64)
 	for i := 0; i < len(template)-1; i++ {
 		wg.Add(1)
-		go firstPair(wg, template[i:i+2], insertions, steps-1, countChannel)
+		go firstPair(wg, template[i:i+2], insertions, steps-1, incomingCountChannel)
 	}
 
 	go func() {
 		wg.Wait()
-		close(countChannel)
+		close(incomingCountChannel)
 	}()
 
-	for count := range countChannel {
+	for count := range incomingCountChannel {
 		finalCount = mergeCounts(finalCount, count)
 	}
 
@@ -104,14 +104,14 @@ func runSteps(template string, insertions map[string]string, steps int) int {
 	return high - low
 }
 
-func firstPair(wg *sync.WaitGroup, template string, insertions map[string]string, step int, counts chan map[string]int) {
+func firstPair(wg *sync.WaitGroup, template string, insertions map[string]string, step int, counts chan map[string]uint64) {
 	defer wg.Done()
-	count := make(map[string]int)
+	count := make(map[string]uint64)
 	addPair(template, insertions, step, count)
 	counts <- count
 }
 
-func addPair(template string, insertions map[string]string, step int, count map[string]int) {
+func addPair(template string, insertions map[string]string, step int, count map[string]uint64) {
 	additionalChar := insertions[template]
 	addToCount(count, additionalChar)
 
@@ -125,9 +125,9 @@ func addPair(template string, insertions map[string]string, step int, count map[
 	addPair(pair2, insertions, step-1, count)
 }
 
-func getCounts(count map[string]int) (int, int) {
-	highCount := 0
-	lowCount := math.MaxInt
+func getCounts(count map[string]uint64) (uint64, uint64) {
+	highCount := uint64(0)
+	lowCount := uint64(math.MaxUint64)
 
 	for _, value := range count {
 		if value < lowCount {
@@ -141,7 +141,7 @@ func getCounts(count map[string]int) (int, int) {
 	return highCount, lowCount
 }
 
-func addToCount(count map[string]int, char string) {
+func addToCount(count map[string]uint64, char string) {
 	if _, ok := count[char]; ok {
 		count[char] += 1
 	} else {
@@ -149,8 +149,8 @@ func addToCount(count map[string]int, char string) {
 	}
 }
 
-func mergeCounts(count1 map[string]int, count2 map[string]int) map[string]int {
-	result := make(map[string]int)
+func mergeCounts(count1 map[string]uint64, count2 map[string]uint64) map[string]uint64 {
+	result := make(map[string]uint64)
 	for key, value := range count1 {
 		result[key] = value
 	}
@@ -171,8 +171,9 @@ In the above example, the most common element is B (occurring 2192039569602 time
 Apply 40 steps of pair insertion to the polymer template and find the most and least common elements in the result.
 What do you get if you take the quantity of the most common element and subtract the quantity of the least common
 element?
+
 */
-func Part2(fileName string) int {
+func Part2(fileName string) uint64 {
 	input := utils.ReadLines(fileName)
 	template, insertions := parseInputLines(input)
 	return runSteps(template, insertions, 40)

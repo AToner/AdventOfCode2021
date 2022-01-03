@@ -82,7 +82,7 @@ func runSteps(template string, insertions map[string]string, steps int) uint64 {
 	finalCount := make(map[string]uint64)
 
 	for _, char := range strings.Split(template, "") {
-		addToCount(finalCount, char)
+		finalCount[char] += 1
 	}
 
 	incomingCountChannel := make(chan map[string]uint64)
@@ -113,16 +113,14 @@ func firstPair(wg *sync.WaitGroup, template string, insertions map[string]string
 
 func addPair(template string, insertions map[string]string, step int, count map[string]uint64) {
 	additionalChar := insertions[template]
-	addToCount(count, additionalChar)
+	count[additionalChar] += 1
 
 	if step == 0 {
 		return
 	}
 
-	pair1 := template[:1] + additionalChar
-	pair2 := additionalChar + template[1:]
-	addPair(pair1, insertions, step-1, count)
-	addPair(pair2, insertions, step-1, count)
+	addPair(template[:1]+additionalChar, insertions, step-1, count)
+	addPair(additionalChar+template[1:], insertions, step-1, count)
 }
 
 func getCounts(count map[string]uint64) (uint64, uint64) {
@@ -139,14 +137,6 @@ func getCounts(count map[string]uint64) (uint64, uint64) {
 		}
 	}
 	return highCount, lowCount
-}
-
-func addToCount(count map[string]uint64, char string) {
-	if _, ok := count[char]; ok {
-		count[char] += 1
-	} else {
-		count[char] = 1
-	}
 }
 
 func mergeCounts(count1 map[string]uint64, count2 map[string]uint64) map[string]uint64 {

@@ -4,7 +4,6 @@ import (
 	"andytoner.com/aoc2021/pkg/utils"
 	"math"
 	"strings"
-	"sync"
 )
 
 /*
@@ -78,49 +77,33 @@ func Part1(fileName string) uint64 {
 }
 
 func runSteps(template string, insertions map[string]string, steps int) uint64 {
-	wg := &sync.WaitGroup{}
-	finalCount := make(map[string]uint64)
 
-	for _, char := range strings.Split(template, "") {
-		finalCount[char] += 1
-	}
+	pairCount := make(map[string]uint64)
+	var characterCount map[string]uint64
 
-	incomingCountChannel := make(chan map[string]uint64)
+	//
+	// Init the pairs
 	for i := 0; i < len(template)-1; i++ {
-		wg.Add(1)
-		go firstPair(wg, template[i:i+2], insertions, steps-1, incomingCountChannel)
+		pairCount[template[i:i+2]] += 1
 	}
 
-	go func() {
-		wg.Wait()
-		close(incomingCountChannel)
-	}()
+	for step := 0; step < steps; step++ {
+		characterCount = make(map[string]uint64)
+		newPairCount := make(map[string]uint64)
+		for pair, count := range pairCount {
+			newChar := insertions[pair]
+			characterCount[string(pair[0])] += count
+			characterCount[newChar] += count
 
-	for count := range incomingCountChannel {
-		finalCount = mergeCounts(finalCount, count)
+			newPairCount[pair[:1]+newChar] += count
+			newPairCount[newChar+pair[1:]] += count
+		}
+		pairCount = newPairCount
 	}
+	characterCount[string(template[len(template)-1])] += 1
 
-	high, low := getCounts(finalCount)
+	high, low := getCounts(characterCount)
 	return high - low
-}
-
-func firstPair(wg *sync.WaitGroup, template string, insertions map[string]string, step int, counts chan map[string]uint64) {
-	defer wg.Done()
-	count := make(map[string]uint64)
-	addPair(template, insertions, step, count)
-	counts <- count
-}
-
-func addPair(template string, insertions map[string]string, step int, count map[string]uint64) {
-	additionalChar := insertions[template]
-	count[additionalChar] += 1
-
-	if step == 0 {
-		return
-	}
-
-	addPair(template[:1]+additionalChar, insertions, step-1, count)
-	addPair(additionalChar+template[1:], insertions, step-1, count)
 }
 
 func getCounts(count map[string]uint64) (uint64, uint64) {
@@ -139,17 +122,6 @@ func getCounts(count map[string]uint64) (uint64, uint64) {
 	return highCount, lowCount
 }
 
-func mergeCounts(count1 map[string]uint64, count2 map[string]uint64) map[string]uint64 {
-	result := make(map[string]uint64)
-	for key, value := range count1 {
-		result[key] = value
-	}
-	for key, value := range count2 {
-		result[key] = value + count1[key]
-	}
-	return result
-}
-
 /*
 --- Part Two ---
 The resulting polymer isn't nearly strong enough to reinforce the submarine. You'll need to run more steps of the pair
@@ -161,7 +133,7 @@ In the above example, the most common element is B (occurring 2192039569602 time
 Apply 40 steps of pair insertion to the polymer template and find the most and least common elements in the result.
 What do you get if you take the quantity of the most common element and subtract the quantity of the least common
 element?
-
+2437698971143
 */
 func Part2(fileName string) uint64 {
 	input := utils.ReadLines(fileName)

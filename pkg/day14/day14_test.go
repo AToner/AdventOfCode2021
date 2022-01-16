@@ -33,7 +33,7 @@ func TestPart2(t *testing.T) {
 		want uint64
 	}{
 		{name: "Sample", args: args{fileName: "../../input/day14/day14_sample.txt"}, want: 2188189693529},
-		{name: "Actual", args: args{fileName: "../../input/day14/day14.txt"}, want: 2010},
+		{name: "Actual", args: args{fileName: "../../input/day14/day14.txt"}, want: 2437698971143},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
